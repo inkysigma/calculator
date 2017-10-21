@@ -8,6 +8,13 @@ object TrieNode {
     n.word = word
     n
   }
+
+  def clone(node: TrieNode): TrieNode = {
+    val n: TrieNode = new TrieNode()
+    n.word = node.word
+    n.marked = node.marked
+    n
+  }
 }
 
 class TrieNode {

@@ -53,14 +53,14 @@ class StringTokenizer(val str: String) {
       case None => return getToken.toString
     }
 
-    var lastMarked: TrieNode = node
+    var lastMarked: TrieNode = TrieNode.clone(node)
     lastMarked.word = ch(index).toString
 
     var tempIdx = index + 1
     index = index + 1
 
     breakable {
-      while (Character.isLetter(ch(tempIdx)) && !eos()) {
+      while (!eos() && tempIdx < ch.length && Character.isLetter(ch(tempIdx))) {
         if (node.marked) {
           lastMarked = node
           index = tempIdx

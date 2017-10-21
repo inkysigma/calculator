@@ -38,7 +38,7 @@ class ExpressionTree {
     val tokenizer = new StringTokenizer(str)
     while (!tokenizer.eos) {
       tokenizer.peekToken() match {
-        case TokenType.Character => {
+        case TokenType.Character =>
           val str = tokenizer.nextString()
           if (ConstantMapping.MAPPING.contains(str))
             outputStack.push(str)
@@ -47,15 +47,16 @@ class ExpressionTree {
           else if (operatorStack.isEmpty)
             operatorStack.push(str)
           else
-            while (operatorStack.nonEmpty) {
-              if (PrecedenceMapping.getPrecedence(operatorStack.head) >= PrecedenceMapping.getPrecedence(str)) {
-                outputStack.push(operatorStack.pop())
-              } else {
-                outputStack.push(str)
-                break
+            breakable {
+              while (operatorStack.nonEmpty) {
+                if (PrecedenceMapping.getPrecedence(operatorStack.head) >= PrecedenceMapping.getPrecedence(str)) {
+                  outputStack.push(operatorStack.pop())
+                } else {
+                  outputStack.push(str)
+                  break
+                }
               }
             }
-        }
         case TokenType.Digit => {
           val num = tokenizer.nextNumeral()
           outputStack.push(num.toString)
@@ -88,11 +89,10 @@ class ExpressionTree {
         }
         case TokenType.Error => throw new NotImplementedError()
       }
+    }
 
-      while (operatorStack.nonEmpty) {
-        outputStack.push(operatorStack.pop())
-      }
-
+    while (operatorStack.nonEmpty) {
+      outputStack.push(operatorStack.pop())
     }
   }
 

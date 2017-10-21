@@ -5,8 +5,9 @@ import tree.ExpressionTree
 class ExpressionParseTest extends FlatSpec with Matchers {
   val expressionTree = new ExpressionTree
 
-  "The graph" should "redraw points in a sorted order" in {
+  "The graph" should "parse the following expressions" in {
     expressionTree.parseString("sinx")
+    expressionTree.parseString("sin(x)")
   }
 
   it should "do nothing" in {
