@@ -15,12 +15,13 @@ class TrieTest extends FlatSpec with Matchers {
     assert(trie.exists("hi"))
     assert(trie.exists("bonjour"))
     assert(!trie.exists("not here"))
+    assert(!trie.exists("help"))
     assert(!trie.exists("also not here"))
   }
 
   it should "get nodes that are necessary" in {
-    assert(trie.getNode("hello").equals(TrieNode.create("hello")))
-    assert(trie.getNode("hi").equals(TrieNode.create("hi")))
-    assert(trie.getNode("bonjour").equals(TrieNode.create("bonjour")))
+    assert(trie.getNode("hello").get.equals(TrieNode.create("hello")))
+    assert(trie.getNode("hi").get.equals(TrieNode.create("hi")))
+    assert(trie.getNode("bonjour").get.equals(TrieNode.create("bonjour")))
   }
 }

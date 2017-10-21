@@ -48,19 +48,23 @@ class StringTokenizer(val str: String) {
   def nextString(): String = {
     if (!Character.isLetter(ch(index)))
       return ""
-    val builder = new StringBuilder
-    var node = GlobalMapping.globalMapping.getNode(ch(index).toString)
+    var node = GlobalMapping.globalMapping.getNode(ch(index).toString) match {
+      case Some(c) => c
+      case None => return getToken.toString
+    }
 
     var lastMarked: TrieNode = node
     lastMarked.word = ch(index).toString
 
-    var tempIdx = index
+    var tempIdx = index + 1
+    index = index + 1
 
     breakable {
-      while (Character.isLetter(tempIdx) && !eos()) {
-        if (node.marked)
+      while (Character.isLetter(ch(tempIdx)) && !eos()) {
+        if (node.marked) {
           lastMarked = node
-        builder.append(ch(tempIdx))
+          index = tempIdx
+        }
         node.get(ch(tempIdx)) match {
           case Some(c) => node = c
           case None => break

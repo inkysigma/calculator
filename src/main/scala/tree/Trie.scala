@@ -2,19 +2,30 @@ package tree
 
 import mapping.{ConstantMapping, NodeMapping, VariableMapping}
 
+import scala.collection.mutable
+
 class Trie {
-  val root: TrieNode = new TrieNode()
+  val roots : mutable.HashMap[Char, TrieNode] = mutable.HashMap[Char, TrieNode]()
 
   def addWord(word: String): Unit = {
-    root.add(word.toCharArray, 0)
+    val chars = word.toCharArray
+    if (!roots.contains(chars(0)))
+      roots.put(chars(0), new TrieNode)
+    roots(chars(0)).add(word.toCharArray, 1)
   }
 
   def exists(word: String): Boolean = {
-    root.get(word.toCharArray, 0).marked
+    val chars = word.toCharArray
+    if (!roots.contains(chars(0)))
+      return false
+    roots(chars(0)).exists(word.toCharArray, 1)
   }
 
-  def getNode(word: String): TrieNode = {
-    root.get(word.toCharArray, 0)
+  def getNode(word: String): Option[TrieNode] = {
+    val chars = word.toCharArray
+    if (!roots.contains(chars(0)))
+      return None
+    roots(chars(0)).get(word.toCharArray, 1)
   }
 }
 

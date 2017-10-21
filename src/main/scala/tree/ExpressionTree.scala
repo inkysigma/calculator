@@ -44,16 +44,17 @@ class ExpressionTree {
             outputStack.push(str)
           else if (VariableMapping.MAPPING.contains(str))
             outputStack.push(str)
-          breakable {
+          else if (operatorStack.isEmpty)
+            operatorStack.push(str)
+          else
             while (operatorStack.nonEmpty) {
-              if (PrecedenceMapping.getPrecedence(operatorStack.head) < PrecedenceMapping.getPrecedence(str)) {
+              if (PrecedenceMapping.getPrecedence(operatorStack.head) >= PrecedenceMapping.getPrecedence(str)) {
                 outputStack.push(operatorStack.pop())
               } else {
                 outputStack.push(str)
                 break
               }
             }
-          }
         }
         case TokenType.Digit => {
           val num = tokenizer.nextNumeral()
@@ -79,10 +80,19 @@ class ExpressionTree {
         }
         case TokenType.Operator => {
           val operator = tokenizer.nextOperator()
-          if (PrecedenceMapping.getPrecedence(operator) > PrecedenceMapping.get)
+          if (PrecedenceMapping.getPrecedence(operator) >= PrecedenceMapping.getPrecedence(operatorStack.head)) {
+            outputStack.push(operatorStack.pop())
+          } else {
+            operatorStack.push(operator)
+          }
         }
         case TokenType.Error => throw new NotImplementedError()
       }
+
+      while (operatorStack.nonEmpty) {
+        outputStack.push(operatorStack.pop())
+      }
+
     }
   }
 

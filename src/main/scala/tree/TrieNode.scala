@@ -16,40 +16,45 @@ class TrieNode {
   var marked = false
   var word = ""
 
+  def exists(chs: Array[Char], idx: Integer): Boolean = {
+    if (chs.length == idx) {
+      return marked
+    }
+    if (subtree.contains(chs(idx)))
+      return subtree(chs(idx)).exists(chs, idx + 1)
+    false
+  }
+
   def get(ch: Char): Option[TrieNode] = {
     if (subtree.contains(ch))
       return subtree.get(ch)
     None
   }
 
-  def get(chs: Array[Char], idx: Integer): TrieNode = {
+  def get(chs: Array[Char], idx: Integer): Option[TrieNode] = {
     if (chs.length < 0) {
       throw new IndexOutOfBoundsException
     }
-    if (idx == chs.length - 1) {
-      return this
+    if (idx == chs.length) {
+      return Some(this)
     }
     subtree.get(chs(idx)) match {
       case Some(n) => n.get(chs, idx + 1)
-      case None => {
-        subtree.put(chs(idx), new TrieNode)
-        subtree(chs(idx)).get(chs, idx + 1)
-      }
+      case None => None
     }
   }
 
   def add(chs: Array[Char], idx: Integer): Unit = {
-    if (idx >= chs.length - 1) {
+    if (idx == chs.length) {
       marked = true
       word = new String(chs)
     } else {
       subtree.get(chs(idx)) match {
         case Some(n) => n.add(chs, idx + 1)
-        case _ => {
+        case _ =>
           val node = new TrieNode()
           subtree.put(chs(idx), node)
           node.add(chs, idx + 1)
-        }
       }
     }
   }
