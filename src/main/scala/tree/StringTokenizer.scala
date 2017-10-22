@@ -9,6 +9,7 @@ class TokenizerError(val character: Char, val index: Integer, val expected: Stri
   extends Error(s"A string failed to parse at character $character at index $index. Expected $expected") {
 }
 
+object AllDone extends Error {}
 
 class StringTokenizer(val str: String) {
   private val ch = str.toCharArray
@@ -36,7 +37,7 @@ class StringTokenizer(val str: String) {
   }
 
   def eos(): Boolean = {
-    index == ch.length
+    index >= ch.length
   }
 
   def getToken: Character = {
@@ -59,18 +60,23 @@ class StringTokenizer(val str: String) {
     var tempIdx = index + 1
     index = index + 1
 
-    breakable {
+    try {
       while (!eos() && tempIdx < ch.length && Character.isLetter(ch(tempIdx))) {
-        if (node.marked) {
-          lastMarked = node
-          index = tempIdx
-        }
         node.get(ch(tempIdx)) match {
           case Some(c) => node = c
-          case None => break
+          case None => throw Done
+        }
+        if (node.marked) {
+          lastMarked = node
+
+          // increment past our current tempIdx since that is the new location to begin at
+          index = tempIdx + 1
         }
         tempIdx = tempIdx + 1
       }
+    }
+    catch {
+      case Done => return lastMarked.word
     }
     lastMarked.word
   }

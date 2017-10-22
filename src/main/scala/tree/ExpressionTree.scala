@@ -36,27 +36,30 @@ class ExpressionTree {
     val outputStack = mutable.Stack[String]()
     val operatorStack = mutable.Stack[String]()
     val tokenizer = new StringTokenizer(str)
-    while (!tokenizer.eos) {
+    while (!tokenizer.eos()) {
       tokenizer.peekToken() match {
         case TokenType.Character =>
           val str = tokenizer.nextString()
-          if (ConstantMapping.MAPPING.contains(str))
+          if (ConstantMapping.MAPPING.contains(str)) {
             outputStack.push(str)
-          else if (VariableMapping.MAPPING.contains(str))
+          }
+          else if (VariableMapping.MAPPING.contains(str)) {
             outputStack.push(str)
-          else if (operatorStack.isEmpty)
+          }
+          else if (operatorStack.isEmpty) {
             operatorStack.push(str)
-          else
-            breakable {
-              while (operatorStack.nonEmpty) {
-                if (PrecedenceMapping.getPrecedence(operatorStack.head) >= PrecedenceMapping.getPrecedence(str)) {
-                  outputStack.push(operatorStack.pop())
-                } else {
-                  outputStack.push(str)
-                  break
-                }
+          }
+          else {
+            var ended = false
+            while (operatorStack.nonEmpty && !ended) {
+              if (PrecedenceMapping.getPrecedence(operatorStack.head) >= PrecedenceMapping.getPrecedence(str)) {
+                outputStack.push(operatorStack.pop())
+              } else {
+                outputStack.push(str)
+                ended = true
               }
             }
+          }
         case TokenType.Digit => {
           val num = tokenizer.nextNumeral()
           outputStack.push(num.toString)
@@ -87,7 +90,6 @@ class ExpressionTree {
             operatorStack.push(operator)
           }
         }
-        case TokenType.Error => throw new NotImplementedError()
       }
     }
 
