@@ -1,10 +1,21 @@
 package drawing
 
-import scalafx.scene.canvas.Canvas
-import scalafx.scene.paint.Color
+import org.jfree.chart.ChartFactory
+import org.jfree.chart.fx.ChartViewer
+import org.jfree.data.xy.{XYSeries, XYSeriesCollection}
 
-class Graph(val w: Double, h: Double) extends Canvas(w, h) {
-  private val g = super.graphicsContext2D
+import scala.collection.mutable
+
+class Graph extends
+  ChartViewer(ChartFactory.createXYLineChart("", "", "", new XYSeriesCollection())) {
+
+  def setSize(w: Double, h: Double): Unit = {
+    super.setWidth(w)
+    super.setHeight(h)
+  }
+
+  private def width: Double = super.getWidth
+  private def height: Double = super.getHeight
 
   private var xBegin = -10.0
   private var xEnd = 10.0
@@ -15,121 +26,49 @@ class Graph(val w: Double, h: Double) extends Canvas(w, h) {
   private var xScale = 1.0f
   private var yScale = 1.0f
 
-  private var widthPerPixel = (xEnd - xBegin) / this.getWidth
-  private var heightPerPixel = (yEnd - yBegin) / this.getHeight
+  private var widthPerPixel = (xEnd - xBegin) / width
+  private var heightPerPixel = (yEnd - yBegin) / height
 
-  private var points: Seq[Point] = Seq()
+  private val dataset = new XYSeriesCollection()
+  private val series = mutable.HashMap[String, XYSeries]()
 
-  g.setFill(Color.White)
 
   def setScale(x: Float, y: Float): Unit = {
-    xScale = x
-    yScale = y
+    super.setScaleX(x)
+    super.setScaleY(y)
   }
 
   def setXFrame(xBegin: Float, xEnd: Float): Unit = {
+    super.getChart.getXYPlot.getDomainAxis.setRange(xBegin, xEnd)
     this.xBegin = xBegin
     this.xEnd = xEnd
-    this.widthPerPixel = (xEnd - xBegin) / this.getWidth
+    this.widthPerPixel = (xEnd - xBegin) / width
   }
 
   def setYFrame(yBegin: Float, yEnd: Float): Unit = {
+    super.getChart.getXYPlot.getRangeAxis.setRange(yBegin, yEnd)
     this.yBegin = yBegin
     this.yEnd = yEnd
-    this.heightPerPixel = (yEnd - yBegin) / this.getHeight
+    this.heightPerPixel = (yEnd - yBegin) / height
   }
 
-  private def drawVerticalLines(): Unit = {
-    var bound = xBegin
-    g.stroke = Color.Grey
-    while (bound < xEnd) {
-      val conv = convertHorizontalCoordinate(bound)
-      g.strokeLine(conv, 0, conv, this.height.toDouble)
-      bound = bound + xScale
+  def addPlot(name: String, points: Seq[Point]): Unit = {
+    val series = new XYSeries(name)
+    this.series.put(name, series)
+    points.foreach(f => series.add(f.x, f.y))
+    dataset.addSeries(series)
+  }
+
+  def removePlot(name: String): Unit = {
+    series.get(name) match {
+      case Some(s) =>
+        dataset.removeSeries(s)
+        series.remove(name)
+      case None =>
     }
-    this.g.stroke = Color.Black
-  }
-
-  private def drawHorizontalLines(): Unit = {
-    var bound = yBegin
-    g.stroke = Color.Gray
-    while (bound < yEnd) {
-      val conv = convertVerticalCoordinate(bound)
-      g.strokeLine(0, conv, this.width.toDouble, conv)
-      bound = bound + yScale
-    }
-    g.stroke = Color.Black
-  }
-
-  private def drawAxis(): Unit = {
-    g.stroke = Color.Blue
-    val xConv = convertHorizontalCoordinate(0)
-    val yConv = convertVerticalCoordinate(0)
-    this.g.strokeLine(xConv, 0, xConv, height.toDouble)
-    this.g.strokeLine(0, yConv, width.toDouble, yConv)
-    g.stroke = Color.Black
-  }
-
-  private def drawBorder(): Unit = {
-    this.g.stroke = Color.Gray
-    this.g.strokeRect(0, 0, this.width.toDouble, this.height.toDouble)
-    this.g.stroke = Color.Black
-  }
-
-  def setPoints(points: Seq[Point]): Seq[Point] = {
-    this.points = points.sorted
-    this.points
   }
 
   def redraw(): Unit = {
-    drawBorder()
-    drawVerticalLines()
-    drawHorizontalLines()
-    drawAxis()
-    if (this.points.isEmpty)
-      return
-    var (xPrev, yPrev) = convertCoordinate(this.points.head)
-    if (xPrev < 0 || xPrev > this.getWidth) {
-      xPrev = if (xPrev < 0) 0 else this.getWidth
-    }
-    if (yPrev < 0 || yPrev > this.getHeight) {
-      yPrev = if (yPrev < 0) 0 else this.getHeight
-    }
-    for (point: Point <- this.points) {
-      val (xCoordinate, yCoordinate) = convertCoordinate(point)
-      if (xCoordinate >= 0 && xCoordinate <= this.getWidth &&
-        yCoordinate >= 0 && yCoordinate <= this.getHeight) {
-        this.g.strokeLine(xPrev, yPrev, xCoordinate, yCoordinate)
-        xPrev = xCoordinate
-        yPrev = yCoordinate
-      }
-      else {
-        if (xPrev < 0 || xPrev > this.getWidth) {
-          xPrev = if (xCoordinate < 0) 0 else this.getWidth
-        }
-        if (yPrev < 0 || yPrev > this.getHeight) {
-          yPrev = if (yCoordinate < 0) 0 else this.getHeight
-        }
-      }
-
-    }
-  }
-
-  private def convertHorizontalCoordinate(x: Double): Double = {
-    (x - xBegin) / widthPerPixel
-  }
-
-  private def convertVerticalCoordinate(y: Double): Double = {
-    height.toDouble - (y - yBegin) / heightPerPixel
-  }
-
-  def convertCoordinate(point: Point): (Double, Double) = {
-    val height = this.getHeight
-
-    val widthPerPixel = this.widthPerPixel
-    val heightPerPixel = this.heightPerPixel
-
-    ((point.x - xBegin) / widthPerPixel,
-      height - ((point.y - yBegin) / heightPerPixel))
+    super.setChart(ChartFactory.createXYLineChart("", "", "", dataset))
   }
 }

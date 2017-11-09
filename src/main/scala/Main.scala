@@ -1,36 +1,35 @@
+import java.io.IOException
+
 import drawing.Graph
 import tree.ExpressionTree
 
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
-import scalafx.geometry.{Insets, Rectangle2D}
+import scalafx.geometry.Rectangle2D
 import scalafx.scene.Scene
-import scalafx.scene.layout.{FlowPane, StackPane}
-import scalafx.scene.paint.Color._
 import scalafx.stage.Screen
+import scalafxml.core.{FXMLView, NoDependencyResolver}
 
 object Main extends JFXApp {
-  val graph = new Graph(500, 400)
+  val graph = new Graph()
+  graph.setSize(100, 100)
 
-  val mainPane =  new FlowPane
+  private val rootResource = getClass.getResource("views/Graph.fxml")
 
-  val graphPane = new StackPane
-  graphPane.children.add(graph)
-  graphPane.margin = Insets(25)
+  if (rootResource == null) {
+    throw new IOException("Unable to locate")
+  }
 
-  mainPane.children.add(graphPane)
+  val root = FXMLView(rootResource, NoDependencyResolver)
 
   stage = new PrimaryStage {
     title = "Graphing Calculator"
-    scene = new Scene {
-      fill = LightGray
-      content = mainPane
-    }
+    scene = new Scene(new javafx.scene.Scene(root))
   }
 
   val tree = new ExpressionTree
   tree.parseString("x")
-  graph.setPoints(tree.evaluate(-10, 10))
+  graph.addPlot("Something", tree.evaluate(-10, 10))
   graph.redraw()
 
   val bounds: Rectangle2D = Screen.primary.visualBounds
@@ -39,7 +38,6 @@ object Main extends JFXApp {
   stage.setWidth(bounds.getHeight / 0.75)
 
   stage.show()
-
 
   stage.setX((bounds.getWidth - stage.getWidth) / 2)
   stage.setY((bounds.getHeight - stage.getHeight) / 2)
