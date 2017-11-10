@@ -31,14 +31,18 @@ class Trie {
 
 
 object GlobalMapping {
-  val globalMapping: Trie = new Trie()
-  for ((name, _) <- NodeMapping.MAPPING) {
-    globalMapping.addWord(name)
+  val trie: Trie = new Trie()
+  val hash: mutable.HashMap[String, ExpressionNode] = mutable.HashMap[String, ExpressionNode]()
+  for ((name, node) <- NodeMapping.MAPPING) {
+    trie.addWord(name)
+    hash.put(name, node)
   }
-  for ((variable, _) <- VariableMapping.MAPPING) {
-    globalMapping.addWord(variable)
+  for ((variable, node) <- VariableMapping.MAPPING) {
+    trie.addWord(variable)
+    hash.put(variable, node)
   }
-  for ((constant, _) <- ConstantMapping.MAPPING) {
-    globalMapping.addWord(constant)
+  for ((constant, node) <- ConstantMapping.MAPPING) {
+    trie.addWord(constant)
+    hash.put(constant, new ConstantNode(node))
   }
 }

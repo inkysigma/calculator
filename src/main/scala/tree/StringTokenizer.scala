@@ -49,7 +49,7 @@ class StringTokenizer(val str: String) {
   def nextString(): String = {
     if (!Character.isLetter(ch(index)))
       return ""
-    var node = GlobalMapping.globalMapping.getNode(ch(index).toString) match {
+    var node = GlobalMapping.trie.getNode(ch(index).toString) match {
       case Some(c) => c
       case None => return getToken.toString
     }

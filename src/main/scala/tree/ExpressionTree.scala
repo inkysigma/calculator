@@ -96,6 +96,10 @@ class ExpressionTree {
     while (operatorStack.nonEmpty) {
       outputStack.push(operatorStack.pop())
     }
+
+    if (ConstantMapping.MAPPING.contains(outputStack.head))
+      root = new ConstantNode(ConstantMapping.MAPPING(outputStack.pop()))
+
   }
 
   def evaluate(start: Double, end: Double): Seq[Point] = {
