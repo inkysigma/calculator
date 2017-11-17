@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<?import com.jfoenix.controls.JFXButton?>
 <BorderPane prefHeight="400.0" prefWidth="600.0" stylesheets="@../css/graph.css"
             xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controller.GraphController">
@@ -25,10 +26,20 @@
             </BorderPane.margin>
             <HBox>
                 <Label styleClass="text">x-min:</Label>
-                <JFXTextField prefWidth="50.0" styleClass="text" fx:id="xMin"/>
+                <JFXTextField prefWidth="50.0" styleClass="text" fx:id="xMin" onAction="#resizeXFrame"/>
 
                 <Label styleClass="text">x-max:</Label>
-                <JFXTextField prefWidth="50.0" styleClass="text" fx:id="xMax"/>
+                <JFXTextField prefWidth="50.0" styleClass="text" fx:id="xMax" onAction="#resizeXFrame"/>
+            </HBox>
+            <HBox>
+                <Label styleClass="text">y-min:</Label>
+                <JFXTextField prefWidth="50.0" styleClass="text" fx:id="yMin" onAction="#resizeYFrame"/>
+
+                <Label styleClass="text">y-max:</Label>
+                <JFXTextField prefWidth="50.0" styleClass="text" fx:id="yMax" onAction="#resizeYFrame"/>
+            </HBox>
+            <HBox>
+                <JFXButton>Resize window</JFXButton>
             </HBox>
             <HBox>
                 <Label styleClass="text">f(x) =</Label>

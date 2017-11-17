@@ -33,27 +33,27 @@ class ExpressionTree {
     * @param str the string to parse
     */
   def parseString(str: String): Unit = {
-    val outputStack = mutable.Stack[String]()
-    val operatorStack = mutable.Stack[String]()
+    val outputStack = List[String]()
+    val operatorStack = List[String]()
     val tokenizer = new StringTokenizer(str)
     while (!tokenizer.eos()) {
       tokenizer.peekToken() match {
         case TokenType.Character =>
           val str = tokenizer.nextString()
           if (ConstantMapping.MAPPING.contains(str)) {
-            outputStack.push(str)
+            outputStack +: str
           }
           else if (VariableMapping.MAPPING.contains(str)) {
-            outputStack.push(str)
+            outputStack +: str
           }
           else if (operatorStack.isEmpty) {
-            operatorStack.push(str)
+            operatorStack +: str
           }
           else {
             var ended = false
             while (operatorStack.nonEmpty && !ended) {
               if (PrecedenceMapping.getPrecedence(operatorStack.head) >= PrecedenceMapping.getPrecedence(str)) {
-                outputStack.push(operatorStack.pop())
+                outputStack +: operatorStack.tail
               } else {
                 outputStack.push(str)
                 ended = true
@@ -84,7 +84,8 @@ class ExpressionTree {
         }
         case TokenType.Operator => {
           val operator = tokenizer.nextOperator()
-          if (PrecedenceMapping.getPrecedence(operator) >= PrecedenceMapping.getPrecedence(operatorStack.head)) {
+          if (operatorStack.size > 0 && PrecedenceMapping.getPrecedence(operator) >=
+            PrecedenceMapping.getPrecedence(operatorStack.head)) {
             outputStack.push(operatorStack.pop())
           } else {
             operatorStack.push(operator)
@@ -96,10 +97,28 @@ class ExpressionTree {
     while (operatorStack.nonEmpty) {
       outputStack.push(operatorStack.pop())
     }
+    root = parseExpression(outputStack)
 
-    if (ConstantMapping.MAPPING.contains(outputStack.head))
-      root = new ConstantNode(ConstantMapping.MAPPING(outputStack.pop()))
+  }
 
+  def parseDouble(s: String): Option[Double] = {
+    try {
+      Some(s.toDouble)
+    } catch {
+      case _ => None
+    }
+  }
+
+  def parseExpression(output: mutable.Stack[String]) : ExpressionNode = {
+    parseDouble(output.head) match {
+      case Some(d) => {
+        output.pop()
+        return new ConstantNode(d)
+      }
+    }
+    if (ConstantMapping.MAPPING.contains(output.head))
+      return new ConstantNode(ConstantMapping.MAPPING(output.pop()))
+    ErrorNode
   }
 
   def evaluate(start: Double, end: Double): Seq[Point] = {

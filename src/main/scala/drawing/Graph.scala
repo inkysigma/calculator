@@ -23,9 +23,6 @@ class Graph extends
   private var yBegin = -10.0
   private var yEnd = 10.0
 
-  private var xScale = 1.0f
-  private var yScale = 1.0f
-
   private var widthPerPixel = (xEnd - xBegin) / width
   private var heightPerPixel = (yEnd - yBegin) / height
 
@@ -38,22 +35,24 @@ class Graph extends
     super.setScaleY(y)
   }
 
-  def setXFrame(xBegin: Float, xEnd: Float): Unit = {
-    super.getChart.getXYPlot.getDomainAxis.setRange(xBegin, xEnd)
+  def setXFrame(xBegin: Double, xEnd: Double): Unit = {
     this.xBegin = xBegin
     this.xEnd = xEnd
+    getChart.getXYPlot.getDomainAxis.setLowerBound(xBegin)
+    getChart.getXYPlot.getDomainAxis.setUpperBound(xEnd)
     this.widthPerPixel = (xEnd - xBegin) / width
   }
 
-  def setYFrame(yBegin: Float, yEnd: Float): Unit = {
-    super.getChart.getXYPlot.getRangeAxis.setRange(yBegin, yEnd)
+  def setYFrame(yBegin: Double, yEnd: Double): Unit = {
     this.yBegin = yBegin
     this.yEnd = yEnd
+    super.getChart.getXYPlot.getRangeAxis.setRange(yBegin, yEnd)
     this.heightPerPixel = (yEnd - yBegin) / height
   }
 
   def addPlot(name: String, points: Seq[Point]): Unit = {
     val series = new XYSeries(name)
+    removePlot(name)
     this.series.put(name, series)
     points.foreach(f => series.add(f.x, f.y))
     dataset.addSeries(series)
@@ -69,6 +68,6 @@ class Graph extends
   }
 
   def redraw(): Unit = {
-    super.setChart(ChartFactory.createXYLineChart("", "", "", dataset))
+    getChart.getXYPlot.setDataset(dataset)
   }
 }
